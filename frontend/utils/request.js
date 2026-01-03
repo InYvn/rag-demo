@@ -6,7 +6,7 @@ const BASE_URL = 'http://192.168.31.121:8000';
 
 const service = axios.create({
   baseURL: BASE_URL,
-  timeout: 10000     
+  timeout: 120000     
 });
 
 service.interceptors.response.use(
