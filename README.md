@@ -177,7 +177,6 @@ MYSQL_URL = "mysql+mysqlconnector://root:您的密码@localhost:3306/rag"
 找到 `ZHIPU_API_KEY` 变量，填入您的智谱 AI API Key（用于 LLM 对话）。
 
 ```python
-# 必须以 sk- 开头
 ZHIPU_API_KEY = "您的_ZHIPU_API_KEY"
 ```
 *注意：Embedding 模型已配置为本地模型 (BGE-Large)，不需要修改 Key，但第一次运行时会自动下载模型 (约 1.2GB)，请保持网络通畅。*
