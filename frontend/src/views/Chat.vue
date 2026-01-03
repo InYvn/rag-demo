@@ -1,6 +1,6 @@
 <template>
   <div class="chat-layout">
-    
+
     <aside class="sidebar left-sidebar">
       <div class="sidebar-header">
         <button @click="startNewChat" class="btn btn-primary full-width">
@@ -10,13 +10,8 @@
 
       <div class="session-list">
         <div class="list-header">历史记录</div>
-        <div 
-          v-for="s in sessionList" 
-          :key="s.id" 
-          class="session-item"
-          :class="{ active: s.id === currentSessionId }"
-          @click="loadSession(s.id)"
-        >
+        <div v-for="s in sessionList" :key="s.id" class="session-item" :class="{ active: s.id === currentSessionId }"
+          @click="loadSession(s.id)">
           <span class="icon">💬</span>
           <span class="title">{{ s.title || '无标题会话' }}</span>
         </div>
@@ -28,7 +23,7 @@
         <span class="header-title">{{ currentSessionTitle }}</span>
         <span class="header-model-tag">GLM-4.5-Flash</span>
       </div>
-      
+
       <div class="chat-history" ref="chatBox">
         <div v-if="messages.length === 0" class="empty-state">
           <div class="empty-icon">👋</div>
@@ -41,25 +36,20 @@
           <div class="bubble-content">
             <div class="bubble" v-html="renderMarkdown(msg.content)"></div>
             <div v-if="msg.role === 'assistant' && msg.kb_id" class="msg-meta">
-               KB: {{ getKBName(msg.kb_id) }}
+              KB: {{ getKBName(msg.kb_id) }}
             </div>
           </div>
         </div>
-        
+
         <div v-if="loading" class="msg-row assistant">
           <div class="avatar">🤖</div>
           <div class="bubble loading">正在思考...</div>
         </div>
       </div>
-      
+
       <div class="input-area">
         <div class="input-wrapper">
-          <input 
-            v-model="question" 
-            @keyup.enter="send" 
-            placeholder="输入您的问题..." 
-            :disabled="loading"
-          >
+          <input v-model="question" @keyup.enter="send" placeholder="输入您的问题..." :disabled="loading">
           <button @click="send" class="btn-send" :disabled="loading || !question.trim()">
             ➤
           </button>
@@ -71,7 +61,7 @@
       <div class="settings-header">
         <h3>⚙️ 参数配置</h3>
       </div>
-      
+
       <div class="settings-body">
         <div class="form-group">
           <label class="form-label">📚 引用知识库</label>
@@ -89,12 +79,7 @@
             <label class="form-label">🌡️ 随机性 (Temperature)</label>
             <span class="val-tag">{{ temperature }}</span>
           </div>
-          <input 
-            type="range" 
-            v-model.number="temperature" 
-            min="0" max="1" step="0.1" 
-            class="form-range"
-          >
+          <input type="range" v-model.number="temperature" min="0" max="1" step="0.1" class="form-range">
           <p class="form-hint">
             0: 精确严谨 (适合知识问答)<br>
             1: 创意发散 (适合闲聊)
@@ -108,12 +93,7 @@
             <label class="form-label">🔗 引用片段数 (Top K)</label>
             <span class="val-tag">{{ topK }}</span>
           </div>
-          <input 
-            type="range" 
-            v-model.number="topK" 
-            min="1" max="10" step="1" 
-            class="form-range"
-          >
+          <input type="range" v-model.number="topK" min="1" max="10" step="1" class="form-range">
           <p class="form-hint">每次参考多少段文档内容。</p>
         </div>
       </div>
@@ -158,7 +138,7 @@ export default {
   },
   methods: {
     renderMarkdown(text) { return marked.parse(text || ''); },
-    
+
     getKBName(id) {
       const kb = this.kbList.find(k => k.id === id);
       return kb ? kb.name : '未知知识库';
@@ -168,7 +148,7 @@ export default {
       const res = await request.get('/kb/list');
       this.kbList = res.data;
     },
-    
+
     async fetchSessions() {
       const res = await request.get('/sessions');
       this.sessionList = res.data;
@@ -177,7 +157,10 @@ export default {
     startNewChat() {
       this.currentSessionId = null;
       this.messages = [];
-      this.$router.push('/chat'); // 清理 URL 参数
+
+      if (this.$route.query.session_id) {
+        this.$router.push('/chat');
+      }
     },
 
     async loadSession(sessionId) {
@@ -207,7 +190,7 @@ export default {
         });
 
         this.messages.push({ role: 'assistant', content: res.data.answer, kb_id: this.selectedKbId });
-        
+
         if (!this.currentSessionId) {
           this.currentSessionId = res.data.session_id;
           await this.fetchSessions();
@@ -219,7 +202,7 @@ export default {
         this.scrollToBottom();
       }
     },
-    
+
     scrollToBottom() {
       this.$nextTick(() => {
         const box = this.$refs.chatBox;
@@ -234,7 +217,8 @@ export default {
 /* --- 布局核心 --- */
 .chat-layout {
   display: flex;
-  height: calc(100vh - 60px); /* 减去顶部导航栏高度 */
+  height: calc(100vh - 60px);
+  /* 减去顶部导航栏高度 */
   background-color: #f9f9f9;
   border-top: 1px solid #eee;
 }
@@ -256,7 +240,7 @@ export default {
 
 /* 右侧栏 */
 .right-sidebar {
-  width: 300px; 
+  width: 300px;
   border-left: 1px solid #eee;
   background: #fff;
 }
@@ -271,9 +255,22 @@ export default {
 }
 
 /* --- 左侧样式 --- */
-.sidebar-header { margin-bottom: 20px; }
-.full-width { width: 100%; justify-content: center; }
-.session-list .list-header { font-size: 0.85rem; color: #999; margin-bottom: 10px; font-weight: 600; }
+.sidebar-header {
+  margin-bottom: 20px;
+}
+
+.full-width {
+  width: 100%;
+  justify-content: center;
+}
+
+.session-list .list-header {
+  font-size: 0.85rem;
+  color: #999;
+  margin-bottom: 10px;
+  font-weight: 600;
+}
+
 .session-item {
   padding: 12px;
   margin-bottom: 8px;
@@ -284,22 +281,92 @@ export default {
   color: #444;
   transition: 0.2s;
 }
-.session-item:hover { background: #f5f5f5; }
-.session-item.active { background: #e8f5e9; color: #2e7d32; }
-.session-item .icon { margin-right: 10px; font-size: 1.1rem; }
-.session-item .title { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 0.95rem; }
+
+.session-item:hover {
+  background: #f5f5f5;
+}
+
+.session-item.active {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.session-item .icon {
+  margin-right: 10px;
+  font-size: 1.1rem;
+}
+
+.session-item .title {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 0.95rem;
+}
 
 /* --- 右侧样式 --- */
-.settings-header h3 { margin: 0 0 20px 0; font-size: 1.1rem; color: #333; }
-.settings-body { display: flex; flex-direction: column; gap: 20px; }
-.form-group { display: flex; flex-direction: column; gap: 8px; }
-.form-label { font-weight: 600; font-size: 0.9rem; color: #555; }
-.form-select { padding: 10px; border: 1px solid #ddd; border-radius: 6px; outline: none; background: white; }
-.form-range { width: 100%; cursor: pointer; }
-.form-hint { font-size: 0.8rem; color: #999; margin: 0; line-height: 1.4; }
-.label-row { display: flex; justify-content: space-between; align-items: center; }
-.val-tag { background: #eee; padding: 2px 6px; border-radius: 4px; font-size: 0.8rem; font-family: monospace; }
-.divider { height: 1px; background: #eee; margin: 5px 0; }
+.settings-header h3 {
+  margin: 0 0 20px 0;
+  font-size: 1.1rem;
+  color: #333;
+}
+
+.settings-body {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-label {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #555;
+}
+
+.form-select {
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  outline: none;
+  background: white;
+}
+
+.form-range {
+  width: 100%;
+  cursor: pointer;
+}
+
+.form-hint {
+  font-size: 0.8rem;
+  color: #999;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.label-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.val-tag {
+  background: #eee;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-family: monospace;
+}
+
+.divider {
+  height: 1px;
+  background: #eee;
+  margin: 5px 0;
+}
 
 /* --- 中间聊天样式 --- */
 .chat-header {
@@ -310,8 +377,20 @@ export default {
   justify-content: space-between;
   background: #fff;
 }
-.header-title { font-weight: bold; font-size: 1.1rem; }
-.header-model-tag { background: #e3f2fd; color: #1976d2; padding: 4px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; }
+
+.header-title {
+  font-weight: bold;
+  font-size: 1.1rem;
+}
+
+.header-model-tag {
+  background: #e3f2fd;
+  color: #1976d2;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
 
 .chat-history {
   flex: 1;
@@ -322,39 +401,79 @@ export default {
   gap: 20px;
 }
 
-.msg-row { display: flex; gap: 15px; margin-bottom: 20px; }
-.msg-row.user { flex-direction: row-reverse; }
+.msg-row {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.msg-row.user {
+  flex-direction: row-reverse;
+}
 
 .avatar {
-  width: 40px; height: 40px;
+  width: 40px;
+  height: 40px;
   border-radius: 8px;
   background: #f0f0f0;
-  display: flex; align-items: center; justify-content: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   font-size: 1.4rem;
   flex-shrink: 0;
 }
-.assistant .avatar { background: #e3f2fd; }
-.user .avatar { background: #e8f5e9; }
 
-.bubble-content { max-width: 75%; }
+.assistant .avatar {
+  background: #e3f2fd;
+}
+
+.user .avatar {
+  background: #e8f5e9;
+}
+
+.bubble-content {
+  max-width: 75%;
+}
+
 .bubble {
   padding: 15px;
   border-radius: 12px;
   line-height: 1.6;
   font-size: 0.95rem;
 }
-.assistant .bubble { background: #f9f9f9; color: #333; }
-.user .bubble { background: #42b983; color: white; }
-.assistant .bubble.loading { font-style: italic; color: #999; }
 
-.msg-meta { font-size: 0.75rem; color: #ccc; margin-top: 5px; text-align: right; }
+.assistant .bubble {
+  background: #f9f9f9;
+  color: #333;
+}
+
+.user .bubble {
+  background: #42b983;
+  color: white;
+}
+
+.assistant .bubble.loading {
+  font-style: italic;
+  color: #999;
+}
+
+.msg-meta {
+  font-size: 0.75rem;
+  color: #ccc;
+  margin-top: 5px;
+  text-align: right;
+}
 
 .empty-state {
   text-align: center;
   margin-top: 100px;
   color: #666;
 }
-.empty-icon { font-size: 4rem; margin-bottom: 20px; }
+
+.empty-icon {
+  font-size: 4rem;
+  margin-bottom: 20px;
+}
 
 /* 输入框区域 */
 .input-area {
@@ -362,6 +481,7 @@ export default {
   background: #fff;
   /* border-top: 1px solid #eee; */
 }
+
 .input-wrapper {
   display: flex;
   background: #f5f5f5;
@@ -370,11 +490,13 @@ export default {
   border: 1px solid transparent;
   transition: 0.3s;
 }
+
 .input-wrapper:focus-within {
   background: #fff;
   border-color: #42b983;
   box-shadow: 0 0 0 3px rgba(66, 185, 131, 0.1);
 }
+
 .input-wrapper input {
   flex: 1;
   border: none;
@@ -383,6 +505,7 @@ export default {
   font-size: 1rem;
   outline: none;
 }
+
 .btn-send {
   background: #42b983;
   color: white;
@@ -398,10 +521,23 @@ export default {
   align-items: center;
   justify-content: center;
 }
-.btn-send:hover:not(:disabled) { background: #3aa876; }
-.btn-send:disabled { background: #ddd; cursor: not-allowed; }
+
+.btn-send:hover:not(:disabled) {
+  background: #3aa876;
+}
+
+.btn-send:disabled {
+  background: #ddd;
+  cursor: not-allowed;
+}
 
 /* 滚动条美化 */
-::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-thumb { background: #ddd; border-radius: 3px; }
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #ddd;
+  border-radius: 3px;
+}
 </style>
